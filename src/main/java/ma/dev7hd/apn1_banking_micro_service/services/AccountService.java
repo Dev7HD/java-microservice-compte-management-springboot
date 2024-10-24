@@ -4,6 +4,7 @@ import ma.dev7hd.apn1_banking_micro_service.dtos.InfoBankAccountDto;
 import ma.dev7hd.apn1_banking_micro_service.dtos.NewBankAccountDto;
 import ma.dev7hd.apn1_banking_micro_service.entities.BankAccount;
 import lombok.AllArgsConstructor;
+import ma.dev7hd.apn1_banking_micro_service.enums.AccountType;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -60,13 +61,35 @@ public class AccountService implements IAccountService {
     @Override
     public InfoBankAccountDto updateBankAccount(InfoBankAccountDto bankAccountDto) {
         BankAccount bankAccount = bankAccountRepository.findById(bankAccountDto.getId()).orElse(null);
+        return updateAccountInfo(bankAccount, bankAccountDto.getBalance(), bankAccountDto.getCurrency(), bankAccountDto.getAccountType());
+    }
+
+    @Transactional
+    @Override
+    public InfoBankAccountDto updateBankAccount(NewBankAccountDto bankAccountDto, UUID id) {
+        BankAccount bankAccount = bankAccountRepository.findById(id).orElseThrow(() -> new RuntimeException(String.format("Id '%s' not valid", id)));
+        return updateAccountInfo(bankAccount, bankAccountDto.getBalance(), bankAccountDto.getCurrency(), bankAccountDto.getAccountType());
+    }
+
+    private InfoBankAccountDto updateAccountInfo(BankAccount bankAccount, Double balance, String currency, AccountType accountType) {
         if (bankAccount != null) {
-            if(bankAccountDto.getBalance() != null) bankAccount.setBalance(bankAccountDto.getBalance());
-            if(bankAccountDto.getCurrency() != null && !bankAccountDto.getCurrency().isEmpty()) bankAccount.setCurrency(bankAccountDto.getCurrency());
-            if(bankAccountDto.getAccountType() != null) bankAccount.setAccountType(bankAccountDto.getAccountType());
+            if(balance != null) bankAccount.setBalance(balance);
+            if(currency != null && !currency.isEmpty()) bankAccount.setCurrency(currency);
+            if(accountType != null) bankAccount.setAccountType(accountType);
             bankAccountRepository.save(bankAccount);
             return modelMapper.map(bankAccount, InfoBankAccountDto.class);
         }
         return null;
+    }
+
+    @Override
+    public InfoBankAccountDto getAccountById(UUID id){
+        BankAccount bankAccount = bankAccountRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException(String.format("ID: '%s' not found.", id)));
+        return convertBankAccountToDto(bankAccount);
+    }
+
+    private InfoBankAccountDto convertBankAccountToDto(BankAccount bankAccount){
+        return modelMapper.map(bankAccount, InfoBankAccountDto.class);
     }
 }

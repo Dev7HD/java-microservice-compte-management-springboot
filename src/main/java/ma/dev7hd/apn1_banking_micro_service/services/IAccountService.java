@@ -21,4 +21,9 @@ public interface IAccountService {
 
     @Transactional
     InfoBankAccountDto updateBankAccount(InfoBankAccountDto bankAccountDto);
+
+    @Transactional
+    InfoBankAccountDto updateBankAccount(NewBankAccountDto bankAccountDto, UUID id);
+
+    InfoBankAccountDto getAccountById(UUID id);
 }

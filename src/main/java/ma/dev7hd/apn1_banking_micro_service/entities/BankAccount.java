@@ -27,4 +27,7 @@ public class BankAccount {
 
     @Enumerated(EnumType.STRING)
     private AccountType accountType;
+
+    @ManyToOne
+    private Customer customer;
 }
